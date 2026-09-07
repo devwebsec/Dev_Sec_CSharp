@@ -26,7 +26,7 @@
 - ✅ ASP.NET Core 8.0 приложение с лучшими практиками безопасности
 - ✅ JWT аутентификация и авторизация
 - ✅ Entity Framework Core с SQL Server
-- ✅ Интеграция с Azure Key Vault
+- ✅ Интеграция с VaultWarden
 - ✅ Структурированное логирование (Serilog)
 - ✅ Swagger/OpenAPI документация
 - ✅ CORS конфигурация
@@ -43,7 +43,7 @@
 | Entity Framework Core | 8.0.8 | ORM для базы данных |
 | Serilog | 8.0.2 | Логирование |
 | Swagger/Swashbuckle | 6.7.3 | API документация |
-| Azure Key Vault | 4.6.0 | Управление секретами |
+| Vaultwarden | 2026.6.4 | Управление секретами |
 | JWT Bearer | 8.0.8 | Аутентификация |
 
 ## 📦 Требования
