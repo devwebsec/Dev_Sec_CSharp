@@ -5,6 +5,9 @@ on:
     - cron: '0 0 * * 0'  # еженедельно
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   dast:
     runs-on: ubuntu-latest
@@ -15,6 +18,9 @@ jobs:
         target: 'https://staging.example.com'
 
   container-scan:
+    permissions:
+      contents: read
+      security-events: write
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
