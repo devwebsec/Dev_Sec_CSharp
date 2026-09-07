@@ -1,0 +1,46 @@
+name: CI - Security & Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Run unit tests
+      run: dotnet test tests/UnitTests --configuration Release --no-build --verbosity normal
+
+    - name: Run integration tests
+      run: dotnet test tests/IntegrationTests --configuration Release --no-build --verbosity normal
+
+    - name: SonarQube Scan
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: |
+        dotnet tool install --global dotnet-sonarscanner
+        dotnet sonarscanner begin /k:"MySecureApp" /o:"my-org" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.token="$SONAR_TOKEN"
+        dotnet build
+        dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+
+    - name: Check vulnerable packages
+      run: dotnet list package --vulnerable --include-transitive || true
+
+    - name: Check for secrets
+      uses: zricethezav/gitleaks-action@v1
