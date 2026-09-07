@@ -23,8 +23,18 @@ builder.Services.AddSwaggerGen();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-        ?? ["https://localhost:5001", "http://localhost:5000"];
+    var allowedOrigins = builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .GetChildren()
+        .Select(section => section.Value)
+        .Where(value => !string.IsNullOrWhiteSpace(value))
+        .Cast<string>()
+        .ToArray();
+
+    if (allowedOrigins.Length == 0)
+    {
+        allowedOrigins = ["https://localhost:5001", "http://localhost:5000"];
+    }
 
     options.AddPolicy("AllowedOrigins", policy =>
     {
