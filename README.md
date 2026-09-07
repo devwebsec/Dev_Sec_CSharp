@@ -25,7 +25,7 @@
 
 - ✅ ASP.NET Core 8.0 приложение с лучшими практиками безопасности
 - ✅ JWT аутентификация и авторизация
-- ✅ Конфигурация секретов через переменные окружения и User Secrets
+- ✅ Управление секретами через Vaultwarden
 - ✅ Структурированное логирование (Serilog)
 - ✅ Swagger/OpenAPI документация
 - ✅ CORS конфигурация
@@ -127,9 +127,13 @@ Dev_Sec_CSharp/
 
 ## ⚙️ Конфигурация
 
-### Переменные окружения
+### Переменные окружения и Vaultwarden
 
 Создайте файл `.env` на основе `.env.example`:
+
+В production секреты хранятся в Vaultwarden и передаются приложению через защищенный механизм
+deployment (например, Docker/Kubernetes secrets). Приложение читает их как стандартные переменные
+окружения, поэтому секреты не должны храниться в репозитории.
 
 ```env
 # Окружение приложения
@@ -140,6 +144,7 @@ ASPNETCORE_URLS=https://localhost:5001;http://localhost:5000
 
 # Секретные ключи
 JWT_SECRET_KEY=your-secret-key-here-change-in-production
+VAULTWARDEN_SERVER_URL=https://vaultwarden.example.com
 
 # Подключение к БД
 CONNECTION_STRINGS__DefaultConnection=Server=localhost;Database=MyApp;User Id=sa;Password=Your_password123;
@@ -160,7 +165,7 @@ dotnet dev-certs https --trust
 - **CORS** - Контроль кросс-доменных запросов
 - **HTTPS** - Обязательное шифрование в пути
 - **Serilog Логирование** - Аудит и отслеживание событий безопасности
-- **User Secrets** - Локальное управление конфиденциальной информацией
+- **Vaultwarden** - Централизованное управление секретами; production-секреты инжектируются в окружение приложения
 - **DevSecOps Pipeline** - Автоматические проверки безопасности в CI/CD
 
 ## 🧪 Тестирование
