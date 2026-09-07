@@ -169,7 +169,7 @@ dotnet dev-certs https --trust
 - **CORS** - Контроль кросс-доменных запросов
 - **HTTPS** - Обязательное шифрование в пути
 - **Serilog Логирование** - Аудит и отслеживание событий безопасности
-- **Azure Key Vault** - Безопасное управление секретами
+- **Vaultwarden** - Безопасное управление секретами
 - **Entity Framework Core** - Защита от SQL инъекций
 - **User Secrets** - Локальное управление конфиденциальной информацией
 - **DevSecOps Pipeline** - Автоматические проверки безопасности в CI/CD
@@ -237,6 +237,7 @@ kubectl get services
 - Проверьте [Issues](https://github.com/devwebsec/Dev_Sec_CSharp/issues)
 - Создайте новую Issue с детальным описанием проблемы
 - Приложите логи и информацию о вашей системе
+- email lastbest80@gmail.com
 
 ---
 
