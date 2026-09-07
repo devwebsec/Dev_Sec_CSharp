@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerUI;
@@ -25,17 +23,29 @@ builder.Services.AddSwaggerGen();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost", builder =>
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+        ?? ["https://localhost:5001", "http://localhost:5000"];
+
+    options.AddPolicy("AllowedOrigins", policy =>
     {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
 // JWT Configuration
-var jwtSecret = builder.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY not configured");
-var key = Encoding.ASCII.GetBytes(jwtSecret);
+var jwtSecret = builder.Configuration["JWT_SECRET_KEY"];
+if (string.IsNullOrWhiteSpace(jwtSecret) || jwtSecret.Length < 32)
+{
+    throw new InvalidOperationException("JWT_SECRET_KEY must be configured with at least 32 characters.");
+}
+
+var jwtIssuer = builder.Configuration["JWT_ISSUER"]
+    ?? throw new InvalidOperationException("JWT_ISSUER not configured");
+var jwtAudience = builder.Configuration["JWT_AUDIENCE"]
+    ?? throw new InvalidOperationException("JWT_AUDIENCE not configured");
+var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -47,9 +57,11 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false,
+        IssuerSigningKey = key,
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
@@ -69,7 +81,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowLocalhost");
+app.UseCors("AllowedOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
 

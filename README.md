@@ -131,9 +131,10 @@ Dev_Sec_CSharp/
 
 Создайте файл `.env` на основе `.env.example`:
 
-В production секреты хранятся в Vaultwarden и передаются приложению через защищенный механизм
-deployment (например, Docker/Kubernetes secrets). Приложение читает их как стандартные переменные
-окружения, поэтому секреты не должны храниться в репозитории.
+В production Jenkins получает секреты из Vaultwarden и передает приложению только необходимые
+переменные окружения во время сборки и развертывания. Приложение читает их как стандартные
+переменные окружения, поэтому оно не подключается к Vaultwarden напрямую, а секреты не хранятся
+в репозитории.
 
 ```env
 # Окружение приложения
@@ -143,7 +144,11 @@ ASPNETCORE_ENVIRONMENT=Development
 ASPNETCORE_URLS=https://localhost:5001;http://localhost:5000
 
 # Секретные ключи
-JWT_SECRET_KEY=your-secret-key-here-change-in-production
+JWT_SECRET_KEY=replace-with-a-random-secret-at-least-32-characters
+JWT_ISSUER=MySecureApp
+JWT_AUDIENCE=MySecureApp.Api
+Cors__AllowedOrigins__0=https://localhost:5001
+Cors__AllowedOrigins__1=http://localhost:5000
 VAULTWARDEN_SERVER_URL=https://vaultwarden.example.com
 
 # Подключение к БД
@@ -165,7 +170,7 @@ dotnet dev-certs https --trust
 - **CORS** - Контроль кросс-доменных запросов
 - **HTTPS** - Обязательное шифрование в пути
 - **Serilog Логирование** - Аудит и отслеживание событий безопасности
-- **Vaultwarden** - Централизованное управление секретами; production-секреты инжектируются в окружение приложения
+- **Vaultwarden + Jenkins** - Jenkins получает production-секреты из Vaultwarden и инжектирует их в окружение приложения
 - **DevSecOps Pipeline** - Автоматические проверки безопасности в CI/CD
 
 ## 🧪 Тестирование
@@ -184,6 +189,8 @@ docker build -t mysecureapp:latest .
 docker run -p 5000:80 -p 5001:443 \
   -e ASPNETCORE_ENVIRONMENT=Production \
   -e JWT_SECRET_KEY=your-secret \
+  -e JWT_ISSUER=MySecureApp \
+  -e JWT_AUDIENCE=MySecureApp.Api \
   mysecureapp:latest
 ```
 

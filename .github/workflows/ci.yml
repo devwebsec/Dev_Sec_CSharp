@@ -36,7 +36,7 @@ jobs:
         dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
 
     - name: Check vulnerable packages
-      run: dotnet list package --vulnerable --include-transitive || true
+      run: dotnet list MySecureApp.sln package --vulnerable --include-transitive
 
     - name: Check for secrets
       uses: zricethezav/gitleaks-action@v1
