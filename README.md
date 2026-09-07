@@ -25,8 +25,7 @@
 
 - ✅ ASP.NET Core 8.0 приложение с лучшими практиками безопасности
 - ✅ JWT аутентификация и авторизация
-- ✅ Entity Framework Core с SQL Server
-- ✅ Интеграция с VaultWarden
+- ✅ Конфигурация секретов через переменные окружения и User Secrets
 - ✅ Структурированное логирование (Serilog)
 - ✅ Swagger/OpenAPI документация
 - ✅ CORS конфигурация
@@ -40,10 +39,8 @@
 |-----------|--------|-----------|
 | .NET | 8.0 | Runtime и фреймворк |
 | ASP.NET Core | 8.0.8 | Web фреймворк |
-| Entity Framework Core | 8.0.8 | ORM для базы данных |
 | Serilog | 8.0.2 | Логирование |
 | Swagger/Swashbuckle | 6.7.3 | API документация |
-| Vaultwarden | 2026.6.4 | Управление секретами |
 | JWT Bearer | 8.0.8 | Аутентификация |
 
 ## 📦 Требования
@@ -51,7 +48,6 @@
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download) или новее
 - Git
 - Docker (опционально, для контейнеризации)
-- SQL Server 2019+ или SQL Server Express (опционально, для БД)
 
 ## 📥 Установка
 
@@ -119,9 +115,6 @@ Dev_Sec_CSharp/
 │       ├── Program.cs                 # Точка входа приложения
 │       ├── Controllers/               # API контроллеры
 │       │   └── HealthController.cs    # Health check endpoint
-│       ├── Models/                    # Модели данных
-│       ├── Services/                  # Бизнес логика
-│       ├── Data/                      # EF Core DbContext
 │       ├── Properties/                # Конфигурация проекта
 │       └── MySecureApp.csproj         # Файл проекта
 ├── .github/
@@ -151,8 +144,6 @@ JWT_SECRET_KEY=your-secret-key-here-change-in-production
 # Подключение к БД
 CONNECTION_STRINGS__DefaultConnection=Server=localhost;Database=MyApp;User Id=sa;Password=Your_password123;
 
-# Azure Key Vault
-AZURE_KEY_VAULT_ENDPOINT=https://my-keyvault.vault.azure.net/
 ```
 
 ### Сертификаты HTTPS
@@ -169,30 +160,12 @@ dotnet dev-certs https --trust
 - **CORS** - Контроль кросс-доменных запросов
 - **HTTPS** - Обязательное шифрование в пути
 - **Serilog Логирование** - Аудит и отслеживание событий безопасности
-- **Azure Key Vault** - Безопасное управление секретами
-- **Entity Framework Core** - Защита от SQL инъекций
 - **User Secrets** - Локальное управление конфиденциальной информацией
 - **DevSecOps Pipeline** - Автоматические проверки безопасности в CI/CD
 
 ## 🧪 Тестирование
 
-### Запуск юнит тестов
-
-```bash
-dotnet test
-```
-
-### Запуск с покрытием кода
-
-```bash
-dotnet test /p:CollectCoverage=true
-```
-
-### Запуск конкретного теста
-
-```bash
-dotnet test --filter "TestName"
-```
+Автоматические тестовые проекты пока не входят в репозиторий. Проверка сборки выполняется в CI командой `dotnet build`.
 
 ## 🚢 Развертывание
 
