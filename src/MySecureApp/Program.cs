@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerUI;
@@ -6,56 +7,51 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
+    .Enrich.FromLogContext()
     .WriteTo.Console()
-    .WriteTo.File("logs/app-.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.File("logs/app-.txt", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 14)
     .CreateLogger();
 
 builder.Host.UseSerilog();
 
-// Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configure CORS
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .GetChildren()
+    .Select(section => section.Value)
+    .Where(value => !string.IsNullOrWhiteSpace(value))
+    .Cast<string>()
+    .ToArray();
+
 builder.Services.AddCors(options =>
 {
-    var allowedOrigins = builder.Configuration
-        .GetSection("Cors:AllowedOrigins")
-        .GetChildren()
-        .Select(section => section.Value)
-        .Where(value => !string.IsNullOrWhiteSpace(value))
-        .Cast<string>()
-        .ToArray();
-
-    if (allowedOrigins.Length == 0)
+    options.AddPolicy("Default", policy =>
     {
-        allowedOrigins = ["https://localhost:5001", "http://localhost:5000"];
-    }
-
-    options.AddPolicy("AllowedOrigins", policy =>
-    {
-        policy.WithOrigins(allowedOrigins)
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                .WithMethods("GET", "POST", "PUT", "DELETE")
+                .WithHeaders("Content-Type", "Authorization")
+                .AllowCredentials();
+        }
     });
 });
 
-// JWT Configuration
 var jwtSecret = builder.Configuration["JWT_SECRET_KEY"];
 if (string.IsNullOrWhiteSpace(jwtSecret) || jwtSecret.Length < 32)
 {
     throw new InvalidOperationException("JWT_SECRET_KEY must be configured with at least 32 characters.");
 }
 
-var jwtIssuer = builder.Configuration["JWT_ISSUER"]
-    ?? throw new InvalidOperationException("JWT_ISSUER not configured");
-var jwtAudience = builder.Configuration["JWT_AUDIENCE"]
-    ?? throw new InvalidOperationException("JWT_AUDIENCE not configured");
-var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+    ?? throw new InvalidOperationException("Jwt:Issuer not configured");
+var jwtAudience = builder.Configuration["Jwt:Audience"]
+    ?? throw new InvalidOperationException("Jwt:Audience not configured");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -64,37 +60,78 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.RequireHttpsMetadata = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = key,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
         ValidateIssuer = true,
         ValidIssuer = jwtIssuer,
         ValidateAudience = true,
         ValidAudience = jwtAudience,
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.FromSeconds(30)
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Log.Warning("JWT authentication failed: {Message}", context.Exception.Message);
+            return Task.CompletedTask;
+        }
     };
 });
 
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
-// Configure middleware
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+        if (exception is not null)
+        {
+            Log.Error(exception, "Unhandled exception on {Path}", context.Request.Path);
+        }
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsync("""{"error":"internal_server_error"}""");
+    });
+});
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "no-referrer";
+    if (!app.Environment.IsDevelopment())
+    {
+        context.Response.Headers["Content-Security-Policy"] = "default-src 'self'";
+    }
+
+    context.Response.Headers.Remove("Server");
+    context.Response.Headers.Remove("X-Powered-By");
+    await next();
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    app.UseSwaggerUI(options =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MySecureApp API V1");
-        c.DocExpansion(DocExpansion.List);
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "MySecureApp API V1");
+        options.DocExpansion(DocExpansion.List);
     });
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowedOrigins");
+app.UseCors("Default");
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 try
@@ -102,12 +139,14 @@ try
     Log.Information("Starting application");
     app.Run();
 }
-catch (Exception ex)
+catch (Exception exception)
 {
-    Log.Fatal(ex, "Application terminated unexpectedly");
+    Log.Fatal(exception, "Application terminated unexpectedly");
     throw;
 }
 finally
 {
     Log.CloseAndFlush();
 }
+
+public partial class Program { }

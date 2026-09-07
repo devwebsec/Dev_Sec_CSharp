@@ -145,11 +145,10 @@ ASPNETCORE_URLS=https://localhost:5001;http://localhost:5000
 
 # Секретные ключи
 JWT_SECRET_KEY=replace-with-a-random-secret-at-least-32-characters
-JWT_ISSUER=MySecureApp
-JWT_AUDIENCE=MySecureApp.Api
+Jwt__Issuer=MySecureApp
+Jwt__Audience=MySecureApp.Api
 Cors__AllowedOrigins__0=https://localhost:5001
 Cors__AllowedOrigins__1=http://localhost:5000
-VAULTWARDEN_SERVER_URL=https://vaultwarden.example.com
 
 # Подключение к БД
 CONNECTION_STRINGS__DefaultConnection=Server=localhost;Database=MyApp;User Id=sa;Password=Your_password123;
@@ -189,8 +188,8 @@ docker build -t mysecureapp:latest .
 docker run -p 5000:80 -p 5001:443 \
   -e ASPNETCORE_ENVIRONMENT=Production \
   -e JWT_SECRET_KEY=your-secret \
-  -e JWT_ISSUER=MySecureApp \
-  -e JWT_AUDIENCE=MySecureApp.Api \
+  -e Jwt__Issuer=MySecureApp \
+  -e Jwt__Audience=MySecureApp.Api \
   mysecureapp:latest
 ```
 
