@@ -210,6 +210,7 @@ kubectl get services
 - Проверьте [Issues](https://github.com/devwebsec/Dev_Sec_CSharp/issues)
 - Создайте новую Issue с детальным описанием проблемы
 - Приложите логи и информацию о вашей системе
+- email lastbest80@gmail.com
 
 ---
 
