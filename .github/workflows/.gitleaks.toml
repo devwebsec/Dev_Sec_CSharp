@@ -1,0 +1,16 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist"
+paths = [
+  '''\.gitleaks\.toml''',
+  '''test/fixtures/.*''',
+  '''docs/examples/.*'''
+]
+
+[[rules]]
+id = "custom-internal-api-key"
+description = "Internal API key pattern"
+regex = '''INTERNAL_KEY_[A-Za-z0-9]{32}'''
+tags = ["internal", "api-key"]
