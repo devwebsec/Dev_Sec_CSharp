@@ -1,5 +1,7 @@
 # Dev_Sec_CSharp
 
+> **HIGH / PORTFOLIO AUDIT 2026-11-14:** `main` contains a real .NET 8 sample with JWT/Serilog/Swagger in `Program.cs` and NuGet references, but **Dockerfile, Kubernetes manifests and verified Jenkins/Vaultwarden integration are not present**. `.github/workflows/security.yml` repeats top-level `name/on/jobs` and `permissions`; therefore the documented DAST/container gate is **NOT VERIFIED**. Read [evidence and remediation gates](docs/SECURITYWORKSPACE-PORTFOLIO-BOUNDARY-20261114.md) before deployment.
+
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=.net)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE.txt)
 [![GitHub](https://img.shields.io/badge/github-devwebsec-181717?style=flat-square&logo=github)](https://github.com/devwebsec/Dev_Sec_CSharp)
