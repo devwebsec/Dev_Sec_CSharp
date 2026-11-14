@@ -131,6 +131,8 @@ Dev_Sec_CSharp/
 
 ### Переменные окружения и Vaultwarden
 
+> **REQUIRES VALIDATION:** реальная production связка Jenkins → Vaultwarden не представлена исполняемыми файлами текущего репозитория. Следующие утверждения о её работе рассматриваются как интеграционный дизайн, а не доказательство deployment.
+
 Создайте файл `.env` на основе `.env.example`:
 
 В production Jenkins получает секреты из Vaultwarden и передает приложению только необходимые
@@ -179,6 +181,8 @@ dotnet dev-certs https --trust
 Автоматические тестовые проекты пока не входят в репозиторий. Проверка сборки выполняется в CI командой `dotnet build`.
 
 ## 🚢 Развертывание
+
+> **HISTORICAL EXAMPLES — DO NOT EXECUTE:** в текущем `main` нет `Dockerfile` и `k8s/` manifests. Команды Docker/Kubernetes ниже — устаревшие предложения, не готовый путь установки. [HIGH issue #5](https://github.com/devwebsec/Dev_Sec_CSharp/issues/5).
 
 ### Docker
 
