@@ -1,5 +1,7 @@
 # Dev_Sec_CSharp
 
+> **HIGH / PORTFOLIO AUDIT 2026-11-14:** `main` contains a real .NET 8 sample with JWT/Serilog/Swagger in `Program.cs` and NuGet references, but **Dockerfile, Kubernetes manifests and verified Jenkins/Vaultwarden integration are not present**. `.github/workflows/security.yml` repeats top-level `name/on/jobs` and `permissions`; therefore the documented DAST/container gate is **NOT VERIFIED**. [HIGH tracked #5](https://github.com/devwebsec/Dev_Sec_CSharp/issues/5). GitHub [run 43592696062](https://github.com/devwebsec/Dev_Sec_CSharp/actions/runs/43592696062) returned `startup_failure` without jobs (exact parser diagnostic unavailable). Read [evidence and remediation gates](docs/SECURITYWORKSPACE-PORTFOLIO-BOUNDARY-20261114.md) before deployment.
+
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=.net)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE.txt)
 [![GitHub](https://img.shields.io/badge/github-devwebsec-181717?style=flat-square&logo=github)](https://github.com/devwebsec/Dev_Sec_CSharp)
@@ -129,6 +131,8 @@ Dev_Sec_CSharp/
 
 ### Переменные окружения и Vaultwarden
 
+> **REQUIRES VALIDATION:** реальная production связка Jenkins → Vaultwarden не представлена исполняемыми файлами текущего репозитория. Следующие утверждения о её работе рассматриваются как интеграционный дизайн, а не доказательство deployment.
+
 Создайте файл `.env` на основе `.env.example`:
 
 В production Jenkins получает секреты из Vaultwarden и передает приложению только необходимые
@@ -177,6 +181,8 @@ dotnet dev-certs https --trust
 Автоматические тестовые проекты пока не входят в репозиторий. Проверка сборки выполняется в CI командой `dotnet build`.
 
 ## 🚢 Развертывание
+
+> **HISTORICAL EXAMPLES — DO NOT EXECUTE:** в текущем `main` нет `Dockerfile` и `k8s/` manifests. Команды Docker/Kubernetes ниже — устаревшие предложения, не готовый путь установки. [HIGH issue #5](https://github.com/devwebsec/Dev_Sec_CSharp/issues/5).
 
 ### Docker
 
